@@ -173,7 +173,8 @@
         <textarea placeholder="Enter remarks here..."></textarea>
     </div>
 
-    <button onclick="window.location.href='chicken_inventory.php'" class="back-btn">🔙 Back to Chicken Inventory</button>
+    <button onclick="window.location.href='index.php'" class="back-btn">🔙 Back to Chicken Inventory</button>
 </div>
 </body>
 </html>
+
