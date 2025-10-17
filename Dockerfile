@@ -4,8 +4,11 @@ FROM php:8.2-apache
 # Copy all your project files into the container
 COPY . /var/www/html
 
-# Expose port 80 (default web server port)
+# Set chicken_inventory.php as the default page
+RUN echo "DirectoryIndex chicken_inventory.php" > /etc/apache2/conf-enabled/directory-index.conf
+
+# Expose port 80
 EXPOSE 80
 
-# Enable PHP extensions if needed (optional)
+# Enable PHP mysqli extension
 RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
