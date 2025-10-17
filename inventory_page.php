@@ -156,7 +156,7 @@
 
     <!-- Back Button -->
     <div class="button-row">
-        <button onclick="window.location.href='chicken_inventory.php'">⬅️ Back to Chicken Inventory</button>
+        <button onclick="window.location.href='index.php'">⬅️ Back to Chicken Inventory</button>
     </div>
 </div>
 
@@ -184,4 +184,5 @@ document.querySelectorAll('.begin, .sales').forEach(input => {
 
 </body>
 </html>
+
  
