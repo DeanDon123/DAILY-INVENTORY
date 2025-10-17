@@ -1,9 +1,11 @@
-# Use official PHP with Apache
+# Use the official PHP Apache image
 FROM php:8.2-apache
 
-# Copy project files into Apache web root
-COPY . /var/www/html/
+# Copy all your project files into the container
+COPY . /var/www/html
 
-# Expose port 80 to the internet
+# Expose port 80 (default web server port)
 EXPOSE 80
-add Dockerfile for deployment
+
+# Enable PHP extensions if needed (optional)
+RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
