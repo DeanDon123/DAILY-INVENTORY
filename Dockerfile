@@ -5,7 +5,7 @@ FROM php:8.2-apache
 COPY . /var/www/html
 
 # Set chicken_inventory.php as the default page
-RUN echo "DirectoryIndex chicken_inventory.php" > /etc/apache2/conf-enabled/directory-index.conf
+RUN echo "DirectoryIndex index.php" > /etc/apache2/conf-enabled/directory-index.conf
 
 # Expose port 80
 EXPOSE 80
