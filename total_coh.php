@@ -1,212 +1,157 @@
 <?php
-// total_coh.php
+session_start();
+require 'db.php';
+
+// ✅ Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $dates = $_POST['coh_date'] ?? [];
+    $amounts = $_POST['amount'] ?? [];
+
+    $stmt = $conn->prepare("INSERT INTO coh_records (date, amount, branch) VALUES (?, ?, 'Malvar')");
+    $saved = false;
+
+    for ($i = 0; $i < count($dates); $i++) {
+        if (!empty($dates[$i]) && !empty($amounts[$i])) {
+            $stmt->execute([$dates[$i], $amounts[$i]]);
+            $saved = true;
+        }
+    }
+
+    if ($saved) {
+        $successMsg = "✅ COH data saved successfully!";
+    } else {
+        $errorMsg = "⚠️ No valid data entered.";
+    }
+}
+
+// ✅ Fetch saved COH records for Malvar branch
+$records = $conn->query("SELECT date, amount FROM coh_records WHERE branch = 'Malvar' ORDER BY date DESC");
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Total COH</title>
+<title>Total COH - Malvar Branch</title>
 <style>
-    * {
-        box-sizing: border-box;
-        font-family: "Segoe UI", Roboto, Arial, sans-serif;
-    }
-
+    * { box-sizing: border-box; font-family: "Segoe UI", Roboto, Arial, sans-serif; }
     body {
-        background: #f3f3f3;
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.5s ease-in-out;
+        background: #f3f3f3; margin: 0; padding: 20px;
+        display: flex; justify-content: center;
+        opacity: 0; transition: opacity 0.5s ease-in-out;
     }
-
-    body.loaded {
-        opacity: 1;
-    }
-
+    body.loaded { opacity: 1; }
     .container {
-        width: 100%;
-        max-width: 420px;
-        background: #fff;
-        border-radius: 10px;
-        padding: 15px;
+        width: 100%; max-width: 480px; background: #fff;
+        border-radius: 10px; padding: 15px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
-
     h2 {
-        text-align: center;
-        background: #4caf50;
-        color: white;
-        padding: 8px;
-        border-radius: 8px;
-        font-size: 16px;
-        margin: 0 0 15px;
+        text-align: center; background: #4caf50; color: white;
+        padding: 8px; border-radius: 8px; font-size: 16px; margin: 0 0 15px;
     }
-
     .section {
-        border: 1.5px solid #a5d6a7;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 15px;
-        background: #fafafa;
+        border: 1.5px solid #a5d6a7; border-radius: 8px;
+        padding: 15px; margin-bottom: 15px; background: #fafafa;
     }
-
-    h3 {
-        font-size: 14px;
-        font-weight: bold;
-        color: #2e7d32;
-        margin-bottom: 10px;
-    }
-
-    .row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 6px;
-        margin-bottom: 8px;
-    }
-
-    label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #333;
-        width: 50px;
-    }
-
+    h3 { font-size: 14px; font-weight: bold; color: #2e7d32; margin-bottom: 10px; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 8px; }
+    label { font-size: 13px; font-weight: 600; color: #333; width: 50px; }
     input[type="date"], input[type="number"] {
-        padding: 6px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 13px;
-        width: 120px;
-        text-align: center;
-        transition: all 0.2s ease;
+        padding: 6px; border: 1px solid #ccc; border-radius: 6px;
+        font-size: 13px; width: 120px; text-align: center; transition: all 0.2s ease;
     }
-
     input[type="number"]:focus, input[type="date"]:focus {
-        border-color: #4caf50;
-        box-shadow: 0 0 4px rgba(76,175,80,0.4);
+        border-color: #4caf50; box-shadow: 0 0 4px rgba(76,175,80,0.4);
     }
-
     .total-box {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #90caf9;
-        background: #e3f2fd;
-        border-radius: 6px;
-        height: 30px;
-        width: 100%;
-        font-weight: bold;
-        font-size: 14px;
-        color: #333;
+        display: flex; align-items: center; justify-content: center;
+        border: 1px solid #90caf9; background: #e3f2fd;
+        border-radius: 6px; height: 30px; width: 100%;
+        font-weight: bold; font-size: 14px; color: #333;
     }
-
-    .add-btn {
-        display: inline-block;
-        padding: 6px 10px;
-        background: #4caf50;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-size: 13px;
-        cursor: pointer;
-        transition: background 0.3s;
+    .btn {
+        display: inline-block; width: 100%; padding: 10px;
+        border: none; border-radius: 6px; font-size: 14px;
+        font-weight: 600; cursor: pointer; transition: background 0.3s;
     }
-
-    .add-btn:hover {
-        background: #388e3c;
+    .save-btn { background: #4caf50; color: white; margin-top: 10px; }
+    .save-btn:hover { background: #388e3c; }
+    .back-btn { background: #2196f3; color: white; margin-top: 10px; }
+    .back-btn:hover { background: #1976d2; }
+    .alert, .success {
+        border-radius: 6px; margin-bottom: 10px; text-align: center; padding: 10px;
+        font-weight: 500;
     }
-
-    .overall {
-        border: 1.5px solid #a5d6a7;
-        border-radius: 8px;
-        padding: 10px;
-        text-align: center;
-        background: #f1f8e9;
+    .alert {
+        background: #fff8e1; color: #e65100; border: 1px solid #ffcc80;
     }
-
-    .back-btn {
-        display: block;
-        width: 100%;
-        text-align: center;
-        padding: 10px;
-        background: #2196f3;
-        color: white;
-        font-weight: 600;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        margin-top: 15px;
-        font-size: 14px;
-        position: relative;
-        overflow: hidden;
+    .success {
+        background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7;
     }
-
-    .back-btn:hover {
-        background: #1976d2;
+    table {
+        width: 100%; border-collapse: collapse; margin-top: 15px;
     }
-
-    /* 🔵 Ripple effect */
-    .back-btn::after {
-        content: "";
-        position: absolute;
-        width: 0;
-        height: 0;
-        background: rgba(255,255,255,0.5);
-        border-radius: 50%;
-        transform: scale(0);
-        opacity: 0;
-        transition: transform 0.6s, opacity 1s;
+    th, td {
+        border: 1px solid #ddd; padding: 6px; text-align: center; font-size: 13px;
     }
-
-    .back-btn:active::after {
-        width: 200%;
-        height: 200%;
-        transform: scale(1);
-        opacity: 1;
-        transition: 0s;
+    th {
+        background: #4caf50; color: white;
     }
 </style>
 </head>
 <body>
 <div class="container">
-    <h2>TOTAL COH</h2>
+    <h2>TOTAL COH (Malvar Branch)</h2>
 
-    <div class="section">
-        <h3>DAILY COH</h3>
-        <div id="rows">
-            <div class="row">
-                <label>Date:</label>
-                <input type="date" class="coh-date">
-                <span>=</span>
-                <input type="number" class="amount" placeholder="Amount">
+    <?php if (!empty($errorMsg)): ?>
+        <div class="alert"><?= htmlspecialchars($errorMsg) ?></div>
+    <?php endif; ?>
+
+    <?php if (!empty($successMsg)): ?>
+        <div class="success"><?= htmlspecialchars($successMsg) ?></div>
+    <?php endif; ?>
+
+    <form method="POST">
+        <div class="section">
+            <h3>DAILY COH INPUT</h3>
+            <div id="rows">
+                <div class="row">
+                    <label>Date:</label>
+                    <input type="date" name="coh_date[]" required>
+                    <span>=</span>
+                    <input type="number" name="amount[]" step="0.01" required placeholder="Amount">
+                </div>
             </div>
-            <div class="row">
-                <label>Date:</label>
-                <input type="date" class="coh-date">
-                <span>=</span>
-                <input type="number" class="amount" placeholder="Amount">
-            </div>
-            <div class="row">
-                <label>Date:</label>
-                <input type="date" class="coh-date">
-                <span>=</span>
-                <input type="number" class="amount" placeholder="Amount">
-            </div>
+            <button type="button" class="btn save-btn" style="background:#4caf50;" onclick="addRow()">+ ADD</button>
         </div>
-        <button class="add-btn" onclick="addRow()">+ ADD</button>
-    </div>
 
-    <div class="overall">
-        <b>OVERALL TOTAL = </b>
-        <div class="total-box" id="overall-total">0.00</div>
-    </div>
+        <div class="overall">
+            <b>OVERALL TOTAL = </b>
+            <div class="total-box" id="overall-total">0.00</div>
+        </div>
 
-    <button class="back-btn" onclick="goBack()">⬅ Back to Chicken Inventory</button>
+        <button type="submit" class="btn save-btn">💾 SAVE</button>
+        <button type="button" class="btn back-btn" onclick="goBack()">⬅ BACK</button>
+    </form>
+
+    <?php if ($records->rowCount() > 0): ?>
+        <h3 style="margin-top: 20px; color:#2e7d32;">Saved COH Records</h3>
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>Amount</th>
+            </tr>
+            <?php while ($row = $records->fetch(PDO::FETCH_ASSOC)): ?>
+                <tr>
+                    <td><?= htmlspecialchars($row['date']) ?></td>
+                    <td><?= number_format($row['amount'], 2) ?></td>
+                </tr>
+            <?php endwhile; ?>
+        </table>
+    <?php else: ?>
+        <p style="text-align:center; color:#888; margin-top:10px;">No COH records yet.</p>
+    <?php endif; ?>
 </div>
 
 <script>
@@ -214,45 +159,39 @@ function formatNumber(num) {
     return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// Add new COH row
 function addRow() {
     const container = document.getElementById('rows');
     const div = document.createElement('div');
     div.className = 'row';
     div.innerHTML = `
         <label>Date:</label>
-        <input type="date" class="coh-date">
+        <input type="date" name="coh_date[]" required>
         <span>=</span>
-        <input type="number" class="amount" placeholder="Amount">
+        <input type="number" name="amount[]" step="0.01" required placeholder="Amount">
     `;
     container.appendChild(div);
-    attachListeners(); // make new inputs responsive
+    attachListeners();
 }
 
-// Compute total
 function computeTotal() {
     let total = 0;
-    document.querySelectorAll('.amount').forEach(i => {
+    document.querySelectorAll('input[name="amount[]"]').forEach(i => {
         total += parseFloat(i.value || 0);
     });
     document.getElementById('overall-total').textContent = formatNumber(total);
 }
 
-// Attach listeners
 function attachListeners() {
-    document.querySelectorAll('.amount').forEach(i => {
+    document.querySelectorAll('input[name="amount[]"]').forEach(i => {
         i.removeEventListener('input', computeTotal);
         i.addEventListener('input', computeTotal);
     });
 }
 
-// Back button with fade effect
 function goBack() {
-    document.body.classList.remove('loaded');
-    setTimeout(() => window.location.href = 'inventory_page.php', 300);
+    window.location.href = 'index.php'; // change if you have a different page name
 }
 
-// On load
 window.onload = () => {
     document.body.classList.add('loaded');
     attachListeners();
