@@ -184,5 +184,4 @@ document.querySelectorAll('.begin, .sales').forEach(input => {
 
 </body>
 </html>
-
  
